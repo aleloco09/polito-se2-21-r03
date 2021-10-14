@@ -93,6 +93,69 @@ app.post('/api/tasks', [
 
 });
 
+
+app.post('/api/tickets', [
+    check('ticketId').isInt({min:0}),
+    check('counterId').isInt({min:0}),
+    check('position').isInt({min:0}),
+    check('ticketNumber').isInt({min:0}),
+    check('serviceTypeId').isInt(),
+    check('ticketNumber').isInt(),
+    check('creationDate').isLength({min:16,max:16}).matches(/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]/),
+    //isDate({format: 'YYYY-MM-DD HH:mm', strictMode: true}),
+    check('ewt').isFloat({min:0})
+],isLoggedIn, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()){
+        
+        return res.status(422).json({errors: errors.array()})
+    }
+    const task = {
+        ticketId: req.body.ticketId,
+        counterId: req.body.counterId,
+        position: req.body.position,
+        ticketNumber: req.body.ticketNumber,
+        creationDate:req.body.creationDate,
+        ewt:req.body.ewt,
+    };
+    try {
+        await dao.createTicket(ticket);
+        res.status(201).end();
+    } catch (err) {
+        console.log(err)
+        res.status(503).json({ error: `Database error during the creation of tiket ${tiket.ticketId}.` });
+    }
+
+});
+
+app.put('/api/tasks',[
+    check('id').isInt({min:0}),
+    check('description').isString(),
+    check('important').isInt({min:0, max:1}),
+    check('private').isInt({min:0, max:1}),
+    check('deadline').isLength({min:16,max:16}).matches(/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]/),
+], isLoggedIn, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()){
+        return res.status(422).json({errors: errors.array()})
+    }
+    const task = {
+        id: req.body.id,
+        description: req.body.description,
+        important: req.body.important,
+        private: req.body.private,
+        deadline: req.body.deadline,
+
+    };
+    try {
+        await dao.updateTask(task);
+        res.status(201).end();
+    } catch (err) {
+        res.status(503).json({ error: `Database error during the update of task ${task.description}.` });
+    }
+
+});
+
 app.put('/api/tasks',[
     check('id').isInt({min:0}),
     check('description').isString(),
