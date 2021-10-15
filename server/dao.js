@@ -107,7 +107,7 @@ exports.getTask = (id) => {
     });
 };
 
-exports.createTask = (task) => {
+/*exports.createTask = (task) => {
     // {description:, important:, private:, deadline:, user:,}
     return new Promise((resolve, reject) => {
         const sql = 'INSERT INTO tasks (description, important, private, deadline, user) VALUES(?, ?, ?, ?, ?)';
@@ -119,7 +119,7 @@ exports.createTask = (task) => {
             resolve(this.lastID);
         });
     })
-};
+};*/
 
 exports.createTicket = (ticket) => {
   return new Promise((resolve, reject) => {
@@ -135,7 +135,7 @@ exports.createTicket = (ticket) => {
   })
 };
 
-exports.updateTask=(task)=>{
+/*exports.updateTask=(task)=>{
   return new Promise((resolve, reject) => {
     const sql = 'UPDATE tasks SET description=?, important=?, private=?, deadline=? WHERE id=?';
         db.run(sql, [task.description, task.important, task.private, task.deadline, task.id], function (err) {
@@ -147,7 +147,7 @@ exports.updateTask=(task)=>{
     });
 })
 
-}
+}*/
 
 exports.handleTicket=(ticket)=>{
   return new Promise((resolve, reject) => {
@@ -162,7 +162,7 @@ exports.handleTicket=(ticket)=>{
   })
 }
 
-exports.deleteTask=(task)=>{
+/*exports.deleteTask=(task)=>{
   return new Promise((resolve, reject) => {
     const sql = 'DELETE FROM tasks WHERE id=?';
         db.run(sql, [task.id], function (err) {
@@ -173,5 +173,17 @@ exports.deleteTask=(task)=>{
         resolve(true);
     });
 })
+}*/
 
+exports.deleteTicket=(ticket)=>{
+  return new Promise((resolve, reject) => {
+    const sql = 'DELETE FROM service_type_ticket WHERE ticketId=?';
+        db.run(sql, [ticket.ticketId], function (err) {
+        if (err) {
+            reject(err);
+            return;
+        }
+        resolve(true);
+    });
+})
 }
