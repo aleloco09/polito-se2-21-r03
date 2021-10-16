@@ -1,3 +1,3 @@
 export { SGList } from './SGList';
-export { ModalForm } from './ModalForm';
+export { ModalComponent } from './ModalComponent';
 export { MeetingModalForm } from './MeetingModalForm';

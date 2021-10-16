@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 
-import { SGList, ModalForm } from '../../components';
+import { SGList, ModalComponent } from '../../components';
 import { Container, Row, Button, ListGroup, Col, Form } from 'react-bootstrap/';
 import Navigation from '../../components/Navigation';
 
@@ -44,6 +44,8 @@ export function Dashboard(props) {
    * - Meetings
    * - Booked meetings
    */
+
+  /*
   useEffect(() => {
     const fetchSG = async () => {
       try {
@@ -102,29 +104,15 @@ export function Dashboard(props) {
     fetchBookedMeetings();
   }, [setSGList, update]);
 
-  /**
-   * Create a new study group
-   */
-  const handleSave = async (sg) => {
-    try {
-      const data = await fetch('/api/studygroups', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          course_code: sg.courseCode,
-          course_name: sg.courseName,
-          course_credits: sg.courseCredits,
-          color: sg.color,
-        })
-      })
-      await data.json();
-      setUpdate(update + 1);
-    } catch (error) {
-      console.log(error);
-    }
-    setActive(MODAL.CLOSED);
+  */
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    console.log('ok');
+
+    setActive(MODAL.ADD);
   }
 
   /**
@@ -265,7 +253,7 @@ export function Dashboard(props) {
           <Col>
             <div className="Card">
               <h3 className="mb-4">Select service type</h3>
-              <Form>
+              <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                   <Form.Control name="color" as="select" required autoFocus >
                     <option key={1}>black</option>
@@ -274,11 +262,12 @@ export function Dashboard(props) {
                     <option key={4}>blue</option>
                   </Form.Control>
                 </Form.Group>
-                <Button variant="outline-primary">Get ticket</Button>
+                <Button variant="outline-primary" type="submit">Get ticket</Button>
               </Form>
             </div>
           </Col>
         </Row>
+        {(active !== MODAL.CLOSED) && <ModalComponent user={props.user} onClose={handleClose} />}
       </div>
     </Container>
   )
