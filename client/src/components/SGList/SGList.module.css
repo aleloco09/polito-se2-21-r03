@@ -1,0 +1,13 @@
+.RowButton button {
+  color: #fff;
+}
+
+.RowButton button:hover,
+.RowButton button:focus,
+.RowButton button:active,
+.CardTitle:hover,
+.CardTitle:focus,
+.CardTitle:active {
+  color: #471fac !important;
+  cursor: pointer;
+}

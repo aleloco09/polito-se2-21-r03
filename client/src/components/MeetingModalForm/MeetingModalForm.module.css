@@ -1,0 +1,18 @@
+.ImageContainer img {
+  width: 100px;
+}
+
+.ItemSelected {
+  -webkit-box-shadow: inset 0px 0px 0px 2px #471fac;
+  -moz-box-shadow: inset 0px 0px 0px 2px #471fac;
+  box-shadow: inset 0px 0px 0px 2px #471fac;
+}
+
+.SingleImageContainer {
+  text-align: center;
+  position: relative;
+}
+
+.SingleImageContainer img {
+  width: 400px;
+}
