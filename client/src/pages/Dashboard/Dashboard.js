@@ -263,12 +263,13 @@ export function Dashboard(props) {
                   </Form.Control>
                 </Form.Group>
                 <Button variant="outline-primary" type="submit">Get ticket</Button>
-              </Form>
-            </div>
-          </Col>
-        </Row>
-        {(active !== MODAL.CLOSED) && <ModalComponent user={props.user} onClose={handleClose} />}
-      </div>
-    </Container>
+              </Form >
+            </div >
+          </Col >
+        </Row >
+        {(active !== MODAL.CLOSED) && <ModalComponent user={props.user} onClose={handleClose} />
+        }
+      </div >
+    </Container >
   )
 }

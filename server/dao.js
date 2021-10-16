@@ -1,4 +1,3 @@
-
 'use strict';
 
 const sqlite = require('sqlite3');
@@ -6,6 +5,19 @@ const sqlite = require('sqlite3');
 const db = new sqlite.Database('se2.db', (err) => {
   if(err) throw err;
 });
+
+exports.getFirstTicketFromQueue = (serviceTypeId) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT MIN(ticketId) FROM service_type_ticket WHERE serviceTypeId=?';
+        db.get(sql, [serviceTypeId], (err, row) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(row);
+        });
+    });
+};
 
 exports.getNumTicketsQueuedByServiceType = (ticket) => {
   return new Promise((resolve, reject) => {
@@ -47,7 +59,7 @@ exports.getNumberOfServedServices = (ticket) => {
   });
 };
 
-exports.getTicketToServe = (id) => {
+exports.getLongestQueueToServe = (id) => {
   return new Promise((resolve, reject) => {
     const sql = `SELECT serviceTypeId 
     FROM counter_service_type 
@@ -93,34 +105,6 @@ exports.getServiceTimeByServiceTypeId = (ticket) => {
   });
 };
 
-exports.getTask = (id) => {
-    return new Promise((resolve, reject) => {
-      const sql = 'SELECT * FROM tasks WHERE id = ?';
-      db.all(sql, [id], (err, rows) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        const tasks = rows.map((e) => ({ id: e.id ,description: e.description, important: e.important, private: e.private, deadline: e.deadline, completed: e.completed, user: e.user  }));
-        resolve(tasks);
-      });
-    });
-};
-
-exports.createTask = (task) => {
-    // {description:, important:, private:, deadline:, user:,}
-    return new Promise((resolve, reject) => {
-        const sql = 'INSERT INTO tasks (description, important, private, deadline, user) VALUES(?, ?, ?, ?, ?)';
-            db.run(sql, [task.description, task.important, task.private, task.deadline, task.user], function (err) {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve(this.lastID);
-        });
-    })
-};
-
 exports.createTicket = (ticket) => {
   return new Promise((resolve, reject) => {
       const [ticketId, counterId, position, ticketNumber, serviceTypeId, creationDate, ewt] = ticket;
@@ -135,23 +119,9 @@ exports.createTicket = (ticket) => {
   })
 };
 
-exports.updateTask=(task)=>{
-  return new Promise((resolve, reject) => {
-    const sql = 'UPDATE tasks SET description=?, important=?, private=?, deadline=? WHERE id=?';
-        db.run(sql, [task.description, task.important, task.private, task.deadline, task.id], function (err) {
-        if (err) {
-            reject(err);
-            return;
-        }
-        resolve(true);
-    });
-})
-
-}
-
 exports.handleTicket=(ticket)=>{
   return new Promise((resolve, reject) => {
-      const sql = 'UPDATE ticket SET counterId=? WHERE id=?';
+      const sql = 'UPDATE ticket SET counterId=? FROM ticket WHERE id=?';
           db.run(sql, [ticket.counterId, ticket.ticketId], function (err) {
           if (err) {
               reject(err);
@@ -162,16 +132,15 @@ exports.handleTicket=(ticket)=>{
   })
 }
 
-exports.deleteTask=(task)=>{
-  return new Promise((resolve, reject) => {
-    const sql = 'DELETE FROM tasks WHERE id=?';
-        db.run(sql, [task.id], function (err) {
-        if (err) {
-            reject(err);
-            return;
-        }
-        resolve(true);
-    });
-})
-
+exports.updateTicketStatus=(status,ticketId)=>{
+    return new Promise((resolve, reject) => {
+        const sql = 'UPDATE status SET status=? FROM service_type_ticket WHERE ticketId=?';
+        db.run(sql, [status,ticketId], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(true);
+        });
+    })
 }
