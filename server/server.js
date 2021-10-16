@@ -34,11 +34,61 @@ app.use(express.json());
  *  DELETE /api/tasks/:id
  *              delete an existing task given it's id
  * *****************************************************
- * */ 
-
-// {description:, important:, private:, deadline:}
+ * */
 
 let isLoggedIn = true;
+
+const computeEstimatedWaitingTime = async (serviceTypeId) => {
+    const tr = await dao.getServiceTimeByServiceTypeId(serviceTypeId);
+    const nr = await dao.getNumTicketsQueuedByServiceType(serviceTypeId);
+    const counters = await dao.getCountersByServiceTypeId(serviceTypeId);
+    let sum = 0, k = 0;
+    for(const counter of counters) {
+        k = await dao.getNumberOfServedServices(counter.counterId);
+        if (k > 0) sum += 1 / k;
+    }
+    if(!tr || !nr || sum <= 0){
+        throw new Error("undefined estimated waiting time");
+    }
+    return tr * (nr / sum + 1 / 2);
+}
+
+const computeNextClient = async (serviceTypeId) => {
+    const selectedQueue = await dao.getLongestQueueToServe(serviceTypeId);
+    try{
+         await dao.getFirstTicketFromQueue(selectedQueue)
+             .then(async ticketId => {
+                 if(ticketId && await dao.updateTicketStatus("SERVED", ticketId)){
+                     return ticketId;
+                 }
+             })
+             .catch(() => throw new Error("Cannot compute next ticket"));
+    }catch (err){
+        throw new Error("Cannot compute next ticket");
+    }
+}
+
+app.get('/api/ticket/next/:serviceType', async function (req, res) {
+    try{
+        await computeNextClient(req.params.serviceTypeId)
+            .then(ticketId => res.json("Next Ticket ID: " + ticketId))
+            .catch(() => res.status(500).json("Cannot process the ticket"));
+    }catch (e) {
+        res.status(500).json(e.message);
+    }
+});
+
+app.get('/api/ticket/next/:id',[
+    check('id').isInt({min:0})
+],isLoggedIn, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()){
+        return res.status(422).json({errors: errors.array()})
+    }
+    const id = req.params.id;
+    await dao.getTask(id).then(task => res.json(task))
+        .catch(()=> res.status(500).json("Database unreachable"));
+});
 
 app.get('/api/tasksGet/user=:user',  [    check('user').isInt({min:0})], isLoggedIn,async (req, res) => {
     await dao.getAllTasks(req.params.user)
@@ -93,6 +143,41 @@ app.post('/api/tasks', [
 
 });
 
+
+app.post('/api/tickets', [
+    check('ticketId').isInt({min:0}),
+    check('counterId').isInt({min:0}),
+    check('position').isInt({min:0}),
+    check('ticketNumber').isInt({min:0}),
+    check('serviceTypeId').isInt(),
+    check('ticketNumber').isInt(),
+    check('creationDate').isLength({min:16,max:16}).matches(/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]/),
+    //isDate({format: 'YYYY-MM-DD HH:mm', strictMode: true}),
+    check('ewt').isFloat({min:0})
+],isLoggedIn, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()){
+        
+        return res.status(422).json({errors: errors.array()})
+    }
+    const task = {
+        ticketId: req.body.ticketId,
+        counterId: req.body.counterId,
+        position: req.body.position,
+        ticketNumber: req.body.ticketNumber,
+        creationDate:req.body.creationDate,
+        ewt:req.body.ewt,
+    };
+    try {
+        await dao.createTicket(ticket);
+        res.status(201).end();
+    } catch (err) {
+        console.log(err)
+        res.status(503).json({ error: `Database error during the creation of ticket ${ticket.ticketId}.` });
+    }
+
+});
+
 app.put('/api/tasks',[
     check('id').isInt({min:0}),
     check('description').isString(),
@@ -117,6 +202,39 @@ app.put('/api/tasks',[
         res.status(201).end();
     } catch (err) {
         res.status(503).json({ error: `Database error during the update of task ${task.description}.` });
+    }
+
+});
+
+app.put('/api/tickets',[
+    check('ticketId').isInt({min:0}),
+    check('counterId').isInt({min:0}),
+    check('position').isInt({min:0}),
+    check('ticketNumber').isInt({min:0}),
+    check('serviceTypeId').isInt(),
+    check('ticketNumber').isInt(),
+    check('creationDate').isLength({min:16,max:16}).matches(/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]/),
+    //isDate({format: 'YYYY-MM-DD HH:mm', strictMode: true}),
+    check('ewt').isFloat({min:0})
+],isLoggedIn, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()){
+        
+        return res.status(422).json({errors: errors.array()})
+    }
+    const task = {
+        ticketId: req.body.ticketId,
+        counterId: req.body.counterId,
+        position: req.body.position,
+        ticketNumber: req.body.ticketNumber,
+        creationDate:req.body.creationDate,
+        ewt:req.body.ewt,
+    };
+    try {
+        await dao.handleTicket(ticket);
+        res.status(201).end();
+    } catch (err) {
+        res.status(503).json({ error: `Database error during the handle of ticket ${ticket.ticketId}.` });
     }
 
 });
@@ -160,5 +278,22 @@ app.delete('/api/tasks/:id',[
         res.status(503).json({ error: `Database error during the delete of task ${task.id}.` });
     }
 });
+
+/*app.delete('/api/service_type_ticket/:ticketId',[
+    check('ticketId').isInt({min:0})
+], isLoggedIn, async (req,res)=>{
+    const errors =validationResult(req);
+    if (!errors.isEmpty()){
+        return res.status(422).json({errors: errors.array()})
+    }
+    const tickets = { ticketId: req.params.ticketId};
+
+    try {
+        await dao.deleteTicket(ticket);
+        res.status(201).end();
+    } catch (err) {
+        res.status(503).json({ error: `Database error during the delete of ticket ${ticket.ticketId}.` });
+    }
+});*/
 
 app.listen(PORT, ()=>console.log(`Server running on http://localhost:${PORT}/`));
