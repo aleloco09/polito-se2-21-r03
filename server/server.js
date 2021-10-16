@@ -40,6 +40,18 @@ app.use(express.json());
 
 let isLoggedIn = true;
 
+const computeEstimatedWaitingTime = (serviceTypeId) => {
+    tr = dao.getServiceTimeByServiceTypeId(serviceTypeId);
+    nr = dao.getNumTicketsQueuedByServiceType(serviceTypeId);
+    const counters = dao.getCountersByServiceTypeId(serviceTypeId);
+    sommatoria = 0;
+    counters.forEach(counter => {
+        k = dao.getNumberOfServedServices(counter.counterId);
+        if(k>0) sommatoria += 1/k;    
+    });
+    return tr * (nr/sommatoria+1/2);
+}
+
 app.get('/api/tasksGet/user=:user',  [    check('user').isInt({min:0})], isLoggedIn,async (req, res) => {
     await dao.getAllTasks(req.params.user)
     .then(tasks => res.json(tasks))
