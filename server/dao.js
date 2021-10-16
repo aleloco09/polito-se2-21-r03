@@ -2,7 +2,7 @@
 
 const sqlite = require('sqlite3');
 
-const db = new sqlite.Database('se2.db', (err) => {
+const db = new sqlite.Database('./server/se2.db', (err) => {
   if(err) throw err;
 });
 
@@ -64,15 +64,17 @@ exports.getLongestQueueToServe = (id) => {
     const sql = `SELECT serviceTypeId 
     FROM counter_service_type 
     WHERE counterId = ?
+    GROUP BY serviceTypeId
     HAVING COUNT(*) = (
-      SELECT MAX(*) 
+      SELECT MAX(serviceTypeId) 
       FROM service_type_ticket
       WHERE serviceTypeId IN(
         SELECT serviceTypeId 
         FROM counter_service_type 
         WHERE counterId = ?)
+      GROUP BY serviceTypeId
     )`;
-    db.all(sql, [id], (err, rows) => {
+    db.all(sql, [id,id], (err, rows) => {
       if (err) {
         reject(err);
         return;
