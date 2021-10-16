@@ -1,114 +1,98 @@
-import "./style.css";
-import Navigation from "./Navigation.js";
-import Footer from "./Footer.js";
-import TaskContainer from "./TaskContainer.js";
-import Filters from "./Filters.js";
-import { Container, Col} from "react-bootstrap";
-import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom"
-import Login from "./Login.js"
-import { useState, useEffect } from "react";
-import API from "./API";
+import { React, useState, useEffect } from 'react';
 
-function App() {
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
 
-	const [filter, setFilter] = useState("All");
-	const [selected, setSelected] = useState("All");
-	const [taskList, setTaskList] = useState([]); //state relativo alle righe della lista 
-	//const [userInfo,setUserinfo]=useState();
-	const [user, setUser] = useState({});
-	const [dirty, setDirty] = useState(true);
-	const [loggedIn, setLoggedIn] = useState(false)
+import Login from './components/Login';
 
-	const doLogIn = async (credentials) => {
-		try {
-			const userInfo = await API.login(credentials);
-			if (filter === 0) { };
-			setLoggedIn(true);
-			setDirty(true);
-			setUser(userInfo);
-			alert(`Welcome, ${userInfo.name}!`);
-		} catch (err) {
-			alert(err);
-		}
-	}
+import routes from './routes';
 
-	const doLogOut = async () => {
-		await API.logout();
-		setLoggedIn(false);
-		// clean up everything
-		setFilter("All");
-		setTaskList([])
-		setUser({})
-	}
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import { Dashboard } from './pages';
 
+/** 
+ * Verify authentication
+ */
+const verifyToken = async () => {
+  try {
+    const data = await fetch('/api/auth', {
+      method: 'POST',
+      credentials: 'include',
+    })
+    const response = await data.json();
 
-	useEffect(() => {  //useEffect è un hook che permette di usare i lyfecycle del component. Equivale alla componentDidMount, componentDidUpdate, componentWillUnmount.
-		
-		const getFilteredTasks = async (filter,userId) => {
-			const tasks = await API.getFilteredTasks(filter,userId);
-			setTaskList(tasks);
-		};
-		if ((dirty && loggedIn) || loggedIn ){
-			
-			getFilteredTasks(filter, user.id).then(() =>{
-				setDirty(false);
-			});
-		}
-	}, [dirty, user, loggedIn, filter]);
-	return (
-		<Router>
-			<Switch>
-				<Route path="/Filters/:filter" render={({ match }) =>
-					loggedIn ? (
-						<div>
+    if (response.status === 'success') {
+      return { status: true, user: response.data };
+    } else {
+      return { status: false, user: null };
+    }
+  } catch (err) {
+    console.log(`⚡️ An error occurred: ${err}`);
+    return false;
+  }
+}
 
-							<Navigation logout={doLogOut} filter={match.params.filter} taskList={taskList} setFilter={setFilter} setSelected={setSelected} selected={selected}>
+/**
+ * PrivateRoute
+ */
+function PrivateRoute({ component: Compontent, path, roles, ...rest }) {
 
-							</Navigation>
-							<Container
-								fluid
-								className="d-flex min-vh-100"
-								style={{ marginLeft: 0, marginRight: 0, padding: 0 }}
-							>
+  const [auth, setAuth] = useState(false);
+  const [goOn, setGoOn] = useState(false);
+  const [user, setUser] = useState({});
 
-								<Col
-									sm={3}
-									className="bg-secondary d-none d-md-block"
-									style={{ padding: 0 }}
-									id="sidebar"
-								>
-									<Filters filter={match.params.filter} taskList={taskList} setFilter={setFilter} setSelected={setSelected} selected={selected}></Filters>
-								</Col>
-								<Col
-									className="flex-grow-1 bg-light"
-									style={{ paddingLeft: 10, paddingRight: 5 }}
-								>
-									{/*Passo i task creati come props al componenente che genererà la lista*/}
-									{(<TaskContainer
-										taskList={taskList}
-										setTaskList={setTaskList}
-										filter={match.params.filter}
-										setDirty={setDirty}
-										user={user}
-									></TaskContainer>)}
-								</Col>
-							</Container>
-							<Footer></Footer>
-						</div>
-					) : <Redirect to="/login" />}>
+  useEffect(() => {
+    verifyToken()
+      .then((res) => {
+        setAuth(res.status);
+        setUser(res.user)
+      })
+      .then(() => {
+        setGoOn(true);
+      })
+  }, []);
 
-				</Route>
-				<Route path="/login" render={() =>
-					<>{loggedIn ? <Redirect to="/Filters/All" /> : <Login login={doLogIn} />}</>
-				} />
-				<Route path="/" render={() =>
-					<>
-						{loggedIn ? (<Redirect path="/" to="/Filters/All"></Redirect>) : <Redirect path="/" to="/login"></Redirect>}
-					</>
-				} />
-			</Switch>
-		</Router>
-	);
+  if (!goOn) {
+    return (
+      <div>Loading...</div>
+    )
+  }
+
+  let res;
+
+  if (auth) {
+    res = <Route {...rest} render={props => <Compontent path={props.location.pathname} isLoggedIn={auth} user={user} {...props} />} />
+  } else {
+    res = <Route {...rest} render={props => <Redirect to={{ pathname: '/login', state: { from: props.location } }} />} />
+  }
+
+  return res;
+}
+
+/**
+ * App
+ */
+const App = () => {
+
+  // we need to render the ModalForm subject to a condition, so that it is created and destroyed every time, thus useState is called again to initialize the state variables
+  return (
+    <Router onE>
+      <Switch>
+        <Route exact path="/" component={Dashboard} />
+        {/* {routes.map((route, idx) => {
+          return route.component && (
+            <PrivateRoute
+              key={idx}
+              path={route.path}
+              exact={route.exact}
+              component={route.component}
+            />
+          )
+        })} */}
+      </Switch>
+    </Router>
+  );
+
 }
 
 export default App;
