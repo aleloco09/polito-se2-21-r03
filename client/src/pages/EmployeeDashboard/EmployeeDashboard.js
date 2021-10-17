@@ -27,7 +27,7 @@ const RowControl = (props) => {
   )
 }
 
-export function Dashboard(props) {
+export function EmployeeDashboard(props) {
 
   const [sgList, setSGList] = useState([]);
   const [meetingList, setMeetingList] = useState([]);
