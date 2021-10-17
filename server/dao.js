@@ -1,9 +1,6 @@
 'use strict';
-const sqlite = require('sqlite3');
-
-const db = new sqlite.Database('se2.db', (err) => {
-    if (err) throw err;
-});
+const DB = require('./db.js');
+const db = DB.getDB(true);
 
 exports.getServices = () => {
     return new Promise((resolve, reject) => {
