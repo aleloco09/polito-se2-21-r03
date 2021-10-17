@@ -1,12 +1,10 @@
 const express = require('express');
-const morgan = require('morgan'); // logging middleware
-const {check, validationResult} = require('express-validator'); // validation middleware
+const {check, validationResult} = require('express-validator');
 
 const dao = require("./dao");
 const PORT = 3001;
 
 app = new express();
-app.use(morgan('dev'));
 app.use(express.json());
 
 const computeEstimatedWaitingTime = async (serviceTypeId) => {

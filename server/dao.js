@@ -1,5 +1,4 @@
 'use strict';
-
 const sqlite = require('sqlite3');
 
 const db = new sqlite.Database('./server/se2.db', (err) => {
