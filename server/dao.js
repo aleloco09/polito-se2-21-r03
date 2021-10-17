@@ -1,9 +1,23 @@
 'use strict';
 const sqlite = require('sqlite3');
 
-const db = new sqlite.Database('./server/se2.db', (err) => {
+const db = new sqlite.Database('se2.db', (err) => {
     if (err) throw err;
 });
+
+exports.getServices = () => {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * FROM service_type";
+        db.all(sql, [], (err, rows) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            const res = rows.map((e) => ({ serviceTypeId: e.serviceTypeId, serviceName: e.serviceName }));
+            resolve(res);
+        });
+    });
+}
 
 exports.getFirstTicketFromQueue = (serviceTypeId) => {
     return new Promise((resolve, reject) => {
@@ -39,7 +53,7 @@ exports.getCountersByServiceTypeId = (serviceTypeId) => {
                 reject(err);
                 return;
             }
-            const counters = rows.map((e) => ({counterId: e.counterId}));
+            const counters = rows.map((e) => ({ counterId: e.counterId }));
             resolve(counters);
         });
     });
@@ -79,7 +93,7 @@ exports.getLongestQueueToServe = (id) => {
             } else if (rows.length > 1) {
                 // caso di 2 code della stessa lunghezza
                 const list = rows
-                    .map(r => ({serviceTypeId: id, serviceTime: this.getServiceTimeByServiceTypeId(r.serviceTypeId)}))
+                    .map(r => ({ serviceTypeId: id, serviceTime: this.getServiceTimeByServiceTypeId(r.serviceTypeId) }))
                     .sort((a, b) => a.serviceTime - b.serviceTime);
                 resolve(list[0]);
             } else {
@@ -115,7 +129,7 @@ exports.createTicket = (ticket) => {
     })
 };
 
-exports.handleTicket = (counterId,ticketId) => {
+exports.handleTicket = (counterId, ticketId) => {
     return new Promise((resolve, reject) => {
         const sql = 'UPDATE ticket SET counterId=? WHERE ticketId=?';
         db.run(sql, [counterId, ticketId], function (err) {

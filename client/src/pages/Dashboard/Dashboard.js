@@ -30,6 +30,9 @@ const RowControl = (props) => {
 export function Dashboard(props) {
 
   const [sgList, setSGList] = useState([]);
+  const [services, setServices] = useState([]);
+  const [serviceId, setServiceId] = useState(1);
+  const [newTicketId, setNewTicketId] = useState(-1);
   const [meetingList, setMeetingList] = useState([]);
   const [bookedMeetingList, setBookedMeetingList] = useState([]);
   const [update, setUpdate] = useState(0);
@@ -40,79 +43,53 @@ export function Dashboard(props) {
 
   /**
    * First fetch from db
-   * - Study groups
-   * - Meetings
-   * - Booked meetings
+   * - Services
+   * - Serving number
    */
 
-  /*
   useEffect(() => {
-    const fetchSG = async () => {
+    const fetchServices = async () => {
       try {
-        const data = await fetch('/api/studygroups', {
+        const data = await fetch('/api/services', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
           }
         })
         const response = await data.json();
-        const tmp = [];
-        for (const obj of response) {
-          tmp.push({
-            id: obj.id,
-            course_code: (obj.course_code) && obj.course_code,
-            course_name: (obj.course_name) && obj.course_name,
-            course_credits: (obj.course_credits) && obj.course_credits,
-            color: (obj.color) && obj.color,
-          });
-        }
-        setSGList(tmp);
+        setServices(response);
       } catch (error) {
         console.log(error);
       }
     }
-    const fetchMeetings = async () => {
-      try {
-        const data = await fetch('/api/meetings', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        const response = await data.json();
-        setMeetingList(response);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    const fetchBookedMeetings = async () => {
-      try {
-        const data = await fetch('/api/meetings/booked', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        const response = await data.json();
-        setBookedMeetingList(response);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchSG();
-    fetchMeetings();
-    fetchBookedMeetings();
-  }, [setSGList, update]);
+    fetchServices();
+  }, [setServices, update]);
 
-  */
-
-  const handleSubmit = (event) => {
+  /**
+   * Create ticket
+   */
+  const handleSubmit = async (event) => {
     event.preventDefault();
     event.stopPropagation();
+    try {
+      const data = await fetch(`/api/tickets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          officeId: 1,
+          serviceTypeId: serviceId
+        })
+      })
+      const response = await data.json();
+      setNewTicketId(response.ticketId);
 
-    console.log('ok');
-
-    setActive(MODAL.ADD);
+      setActive(MODAL.ADD);
+      setUpdate(update + 1);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   /**
@@ -174,24 +151,6 @@ export function Dashboard(props) {
     }
   }
 
-  /**
-   * Handle meeting cancel
-   * @param {*} meeting 
-   */
-  const handleMeetingCancel = async (meeting) => {
-    try {
-      await fetch(`/api/meetings/${meeting.id}/`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      })
-      setUpdate(update + 1);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   const handleClose = () => {
     setActive(MODAL.CLOSED);
   }
@@ -199,44 +158,18 @@ export function Dashboard(props) {
   /**
    * Markup
    */
-  const meetingsMarkup = (meetingList.length > 0) && (
-    <>
-      <h3>All</h3>
-      <ListGroup as="ul" variant="flush">
-        {
-          meetingList.map(t => {
-            return (
-              <ListGroup.Item as="li" key={t.id} style={{ backgroundColor: t.color }} className="d-flex w-100 justify-content-between Card">
-                <div className={'flex-fill m-auto ' + styles.CardTitle}>
-                  {t.course_name} - {t.date} - {t.time} - Duration: {t.duration} - {t.location}
-                </div>
-                <RowControl user={props.user} onSignup={() => handleMeetingSignup(t)} />
-              </ListGroup.Item>
-            );
-          })
-        }
-      </ListGroup>
-    </>
-  );
-
-  const bookedMeetingsMarkup = (bookedMeetingList.length > 0) && (
-    <>
-      <h3>Booked</h3>
-      <ListGroup as="ul" variant="flush">
-        {
-          bookedMeetingList.map(t => {
-            return (
-              <ListGroup.Item as="li" key={t.id} style={{ backgroundColor: t.color }} className="d-flex w-100 justify-content-between Card">
-                <div className={'flex-fill m-auto ' + styles.CardTitle}>
-                  {t.course_name} - {t.date} - {t.time} - Duration: {t.duration} - {t.location}
-                </div>
-                <RowControl user={props.user} active={true} onCancel={() => handleMeetingCancel(t)} />
-              </ListGroup.Item>
-            );
-          })
-        }
-      </ListGroup>
-    </>
+  const servicesMarkup = (services.length > 0) && (
+    <Form.Control name="color" as="select" required autoFocus value={serviceId}
+      onChange={(ev) => {
+        const tmp = services.filter(item => item.serviceName === ev.target.value);
+        setServiceId(tmp[0].serviceTypeId)
+      }}>
+      {services.map((t, index) => {
+        return (
+          <option key={index}>{t.serviceName}</option>
+        )
+      })}
+    </Form.Control>
   );
 
   return (
@@ -255,21 +188,16 @@ export function Dashboard(props) {
               <h3 className="mb-4">Select service type</h3>
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                  <Form.Control name="color" as="select" required autoFocus >
-                    <option key={1}>black</option>
-                    <option key={2}>red</option>
-                    <option key={3}>green</option>
-                    <option key={4}>blue</option>
-                  </Form.Control>
+                  {servicesMarkup}
                 </Form.Group>
                 <Button variant="outline-primary" type="submit">Get ticket</Button>
-              </Form >
-            </div >
-          </Col >
-        </Row >
-        {(active !== MODAL.CLOSED) && <ModalComponent user={props.user} onClose={handleClose} />
+              </Form>
+            </div>
+          </Col>
+        </Row>
+        {(active !== MODAL.CLOSED) && <ModalComponent ticketId={newTicketId} onClose={handleClose} />
         }
-      </div >
-    </Container >
+      </div>
+    </Container>
   )
 }

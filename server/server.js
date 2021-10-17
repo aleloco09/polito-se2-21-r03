@@ -1,5 +1,5 @@
 const express = require('express');
-const {check, validationResult} = require('express-validator');
+const { check, validationResult } = require('express-validator');
 
 const dao = require("./dao");
 const PORT = 3001;
@@ -43,6 +43,19 @@ const computeNextClient = async (counterId) => {
     }
 }
 
+/**
+ * Get all services
+ */
+app.get('/api/services', async (req, res) => {
+    try {
+        return await dao.getServices()
+            .then(data => res.json(data))
+            .catch(() => res.status(500).json("Cannot get services"));
+    } catch (e) {
+        res.status(500).json(e.message);
+    }
+});
+
 app.get('/api/tickets/next/:counterId', async function (req, res) {
     try {
         await computeNextClient(req.params.counterId)
@@ -59,7 +72,7 @@ app.post('/api/tickets', [
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(422).json({errors: errors.array()})
+        return res.status(422).json({ errors: errors.array() })
     }
     try {
         const ticket = {
@@ -68,9 +81,9 @@ app.post('/api/tickets', [
             ewt: await computeEstimatedWaitingTime(req.body.serviceTypeId)
         };
         const newTicket = await dao.createTicket(ticket);
-        res.json({ticketId: newTicket});
+        res.json({ ticketId: newTicket });
     } catch (err) {
-        res.status(503).json({error: `Database error during the creation of ticket.`});
+        res.status(503).json({ error: `Database error during the creation of ticket.` });
     }
 
 });
