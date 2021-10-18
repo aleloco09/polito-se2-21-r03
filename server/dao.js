@@ -1,7 +1,7 @@
 'use strict';
 const sqlite = require('sqlite3');
 
-const db = new sqlite.Database('./server/se2.db', (err) => {
+const db = new sqlite.Database('se2.db', (err) => {
     if (err) throw err;
 });
 
@@ -18,20 +18,6 @@ exports.getServices = () => {
         });
     });
 }
-
-// exports.checkTableTicket = () => {
-//     return new Promise((resolve, reject) => {
-//         const sql = "SELECT * FROM ticket";
-//         db.all(sql, [], (err, rows) => {
-//             if (err) {
-//                 reject(err);
-//                 return;
-//             }
-//             if 
-//             resolve(res);
-//         });
-//     });
-// }
 
 exports.getFirstTicketFromQueue = (serviceTypeId) => {
     return new Promise((resolve, reject) => {
