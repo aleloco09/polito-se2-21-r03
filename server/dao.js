@@ -1,7 +1,7 @@
 'use strict';
 const sqlite = require('sqlite3');
 
-const db = new sqlite.Database('se2.db', (err) => {
+const db = new sqlite.Database('./server/se2.db', (err) => {
     if (err) throw err;
 });
 
@@ -18,6 +18,20 @@ exports.getServices = () => {
         });
     });
 }
+
+// exports.checkTableTicket = () => {
+//     return new Promise((resolve, reject) => {
+//         const sql = "SELECT * FROM ticket";
+//         db.all(sql, [], (err, rows) => {
+//             if (err) {
+//                 reject(err);
+//                 return;
+//             }
+//             if 
+//             resolve(res);
+//         });
+//     });
+// }
 
 exports.getFirstTicketFromQueue = (serviceTypeId) => {
     return new Promise((resolve, reject) => {
@@ -125,6 +139,19 @@ exports.createTicket = (ticket) => {
                 return;
             }
             resolve(this.lastID);
+        });
+    })
+};
+
+exports.insertSelectTypeTicket = (serviceTypeId, ticketId) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'INSERT INTO service_type_ticket (serviceTypeId, ticketId, status) VALUES(?, ?, ?)';
+        db.run(sql, [serviceTypeId, ticketId, 'CREATED'], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(true);
         });
     })
 };

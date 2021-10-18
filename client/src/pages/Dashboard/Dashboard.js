@@ -5,8 +5,6 @@ import { SGList, ModalComponent } from '../../components';
 import { Container, Row, Button, ListGroup, Col, Form } from 'react-bootstrap/';
 import Navigation from '../../components/Navigation';
 
-import styles from '../../components/SGList/SGList.module.css';
-
 const isBetween = require('dayjs/plugin/isBetween');
 dayjs.extend(isBetween);
 
@@ -32,6 +30,7 @@ export function Dashboard(props) {
   const [sgList, setSGList] = useState([]);
   const [services, setServices] = useState([]);
   const [serviceId, setServiceId] = useState(1);
+  const [serviceName, setServiceName] = useState('');
   const [newTicketId, setNewTicketId] = useState(-1);
   const [meetingList, setMeetingList] = useState([]);
   const [bookedMeetingList, setBookedMeetingList] = useState([]);
@@ -159,10 +158,11 @@ export function Dashboard(props) {
    * Markup
    */
   const servicesMarkup = (services.length > 0) && (
-    <Form.Control name="color" as="select" required autoFocus value={serviceId}
+    <Form.Control name="color" as="select" required autoFocus value={serviceName}
       onChange={(ev) => {
         const tmp = services.filter(item => item.serviceName === ev.target.value);
-        setServiceId(tmp[0].serviceTypeId)
+        setServiceName(ev.target.value);
+        setServiceId(tmp[0].serviceTypeId);
       }}>
       {services.map((t, index) => {
         return (
@@ -179,18 +179,12 @@ export function Dashboard(props) {
         <Row className="vh-100">
           <Col>
             <div className="Card">
-              <h3 className="text-center">Serving number</h3>
-              <h1 className="text-center mt-4 mb-4">A22</h1>
-            </div>
-          </Col>
-          <Col>
-            <div className="Card">
               <h3 className="mb-4">Select service type</h3>
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                   {servicesMarkup}
                 </Form.Group>
-                <Button variant="outline-primary" type="submit">Get ticket</Button>
+                <Button variant="primary" type="submit" style={{ width: '100%' }}>Get ticket</Button>
               </Form>
             </div>
           </Col>

@@ -59,7 +59,8 @@ app.get('/api/services', async (req, res) => {
 app.get('/api/tickets/next/:counterId', async function (req, res) {
     try {
         await computeNextClient(req.params.counterId)
-            .then(ticketId => res.json("Next Ticket ID: " + ticketId))
+            // .then(ticketId => res.json("Next Ticket ID: " + ticketId))
+            .then(ticketId => res.json({ ticketId: ticketId }))
             .catch(() => res.status(500).json("Cannot process the ticket"));
     } catch (e) {
         res.status(500).json(e.message);
@@ -81,7 +82,9 @@ app.post('/api/tickets', [
             ewt: await computeEstimatedWaitingTime(req.body.serviceTypeId)
         };
         const newTicket = await dao.createTicket(ticket);
-        res.json({ ticketId: newTicket });
+        await dao.insertSelectTypeTicket(ticket.serviceTypeId, newTicket)
+            .then(() => res.json({ ticketId: newTicket }))
+            .catch(() => res.status(503).json({ error: `Database error during the creation of ticket.` }))
     } catch (err) {
         res.status(503).json({ error: `Database error during the creation of ticket.` });
     }
