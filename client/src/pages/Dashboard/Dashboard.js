@@ -10,6 +10,7 @@ export function Dashboard(props) {
   const [serviceId, setServiceId] = useState(1);
   const [serviceName, setServiceName] = useState('');
   const [newTicketId, setNewTicketId] = useState(-1);
+  const [ewt, setEwt] = useState(-1);
   const [update, setUpdate] = useState(0);
 
   // Modal
@@ -59,6 +60,8 @@ export function Dashboard(props) {
       })
       const response = await data.json();
       setNewTicketId(response.ticketId);
+      if (response.ewt === -1) setEwt(0);
+      else setEwt(response.ewt);
 
       setActive(MODAL.ADD);
       setUpdate(update + 1);
@@ -106,7 +109,7 @@ export function Dashboard(props) {
             </div>
           </Col>
         </Row>
-        {(active !== MODAL.CLOSED) && <ModalComponent ticketId={newTicketId} onClose={handleClose} />
+        {(active !== MODAL.CLOSED) && <ModalComponent ticketId={newTicketId} ewt={ewt} onClose={handleClose} />
         }
       </div>
     </Container>

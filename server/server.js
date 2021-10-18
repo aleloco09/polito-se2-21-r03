@@ -83,7 +83,7 @@ app.post('/api/tickets', [
         };
         const newTicket = await dao.createTicket(ticket);
         await dao.insertSelectTypeTicket(ticket.serviceTypeId, newTicket)
-            .then(() => res.json({ ticketId: newTicket }))
+            .then(() => res.json({ ticketId: newTicket, ewt: ticket.ewt }))
             .catch(() => res.status(503).json({ error: `Database error during the creation of ticket.` }))
     } catch (err) {
         res.status(503).json({ error: `Database error during the creation of ticket.` });
