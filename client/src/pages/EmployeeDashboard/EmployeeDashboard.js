@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { Container, Row, Button, Col, Form } from 'react-bootstrap/';
 import Navigation from '../../components/Navigation';
@@ -6,33 +6,8 @@ import Navigation from '../../components/Navigation';
 export function EmployeeDashboard(props) {
 
   const [newTicketId, setNewTicketId] = useState(-1);
-  const [update, setUpdate] = useState(0);
 
   const counterId = 1;
-
-  /**
-   * First fetch from db
-   * - Services
-   * - Serving number
-   */
-
-  // useEffect(() => {
-  //   const fetchServices = async () => {
-  //     try {
-  //       const data = await fetch('/api/services', {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json'
-  //         }
-  //       })
-  //       const response = await data.json();
-  //       setServices(response);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-  //   fetchServices();
-  // }, [setServices, update]);
 
   /**
    * Create ticket
@@ -48,17 +23,13 @@ export function EmployeeDashboard(props) {
         },
       })
       const response = await data.json();
-      console.log(response)
       if (response.ticketId)
         setNewTicketId(response.ticketId);
 
-      // setUpdate(update + 1);
     } catch (error) {
       console.log(error);
     }
   }
-
-  console.log(newTicketId)
 
   return (
     <Container className="theme-scheme">

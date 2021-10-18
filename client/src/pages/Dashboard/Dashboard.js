@@ -1,39 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import dayjs from 'dayjs';
 
-import { SGList, ModalComponent } from '../../components';
-import { Container, Row, Button, ListGroup, Col, Form } from 'react-bootstrap/';
+import { ModalComponent } from '../../components';
+import { Container, Row, Button, Col, Form } from 'react-bootstrap/';
 import Navigation from '../../components/Navigation';
-
-const isBetween = require('dayjs/plugin/isBetween');
-dayjs.extend(isBetween);
-
-const RowControl = (props) => {
-  const { user, active, onSignup, onCancel } = props;
-
-  return (
-    <>
-      <div className={'ml-auto '}>
-        {(user && !active && (
-          <Button variant="link" style={{ color: '#fff' }} className="shadow-none" onClick={onSignup}>Signup</Button>
-        ))}
-        {(user && active && (
-          <Button variant="link" style={{ color: '#fff' }} className="shadow-none" onClick={onCancel}>Cancel</Button>
-        ))}
-      </div>
-    </>
-  )
-}
 
 export function Dashboard(props) {
 
-  const [sgList, setSGList] = useState([]);
   const [services, setServices] = useState([]);
   const [serviceId, setServiceId] = useState(1);
   const [serviceName, setServiceName] = useState('');
   const [newTicketId, setNewTicketId] = useState(-1);
-  const [meetingList, setMeetingList] = useState([]);
-  const [bookedMeetingList, setBookedMeetingList] = useState([]);
   const [update, setUpdate] = useState(0);
 
   // Modal
@@ -85,65 +61,6 @@ export function Dashboard(props) {
       setNewTicketId(response.ticketId);
 
       setActive(MODAL.ADD);
-      setUpdate(update + 1);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  /**
-   * Ask to join group
-   * @param {*} sg 
-   */
-  const handleAskToJoin = async (sg) => {
-    try {
-      await fetch(`/api/studygroups/${sg.id}/join`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      })
-      setUpdate(update + 1);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  /**
-   * Handle meeting signup
-   * @param {*} meeting 
-   */
-  const handleMeetingSignup = async (meeting) => {
-    try {
-      // Check for overlapping dates
-      if (bookedMeetingList.length > 0) {
-        let meetingDate;
-        let tmp;
-        let a, b;
-        let a_minutes, b_minutes;
-        if (meeting.date !== "" && meeting.time !== "") {
-          meetingDate = dayjs(meeting.date + "T" + meeting.time);
-        }
-        for (const item of bookedMeetingList) {
-          tmp = dayjs(item.date + "T" + item.time);
-          a = item.duration.split(':');
-          b = meeting.duration.split(':');
-          a_minutes = (+a[0]) * 60 + (+a[1]);
-          b_minutes = (+b[0]) * 60 + (+b[1]);
-          if (meetingDate.isBetween(tmp, tmp.add(a_minutes, 'minute'))
-            || (meetingDate.isBefore(tmp) && meetingDate.add(b_minutes, 'minute').isAfter(tmp.add(a_minutes, 'minute')))) {
-            if (!window.confirm('Are you sure you want to signup? Meetings are overlapping.')) {
-              return;
-            }
-          }
-        }
-      }
-      await fetch(`/api/meetings/${meeting.id}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      })
       setUpdate(update + 1);
     } catch (error) {
       console.log(error);
