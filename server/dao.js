@@ -80,7 +80,7 @@ exports.getLongestQueueToServe = (id) => {
                            WHERE serviceTypeId IN (
                                SELECT serviceTypeId
                                FROM counter_service_type
-                               WHERE counterId = ?)
+                               WHERE counterId = ?) AND status = 'CREATED'
                            GROUP BY serviceTypeId
                           )`;
         db.all(sql, [id], (err, rows) => {
