@@ -1,4 +1,4 @@
-TEMPLATE FOR RETROSPECTIVE (Team ##)
+TEMPLATE FOR RETROSPECTIVE (Team R3)
 =====================================
 
 The retrospective should include _at least_ the following
@@ -12,31 +12,24 @@ sections:
 
 ### Macro statistics
 
-- Number of stories committed vs done 
-- Total points committed vs done 
-- Nr of hours planned vs spent (as a team)
+- Number of stories committed vs done: 9 vs 2
+- Total points committed vs done: 139 vs 6
+- Nr of hours planned vs spent (as a team): 40h vs 40h
 
 **Remember**  a story is done ONLY if it fits the Definition of Done:
  
-- Unit Tests passing
-- Code review completed
 - Code present on VCS
-- End-to-End tests performed
-
-> Please refine your DoD 
 
 ### Detailed statistics
 
 | Story  | # Tasks | Points | Hours est. | Hours actual |
-|--------|---------|--------|------------|--------------|
-| _#0_   |         |    -   |            |              |
-| n      |         |        |            |              |
+|:------:|:---------:|:--------:|:-------:|:-------:|
+| _#0_   | - | - | _9_ | _8_ |
+| _#1_   |    _#4_     | _1_   |   _15_   |   _15_   |
+| _#2_   |     _#6_    |    _5_    |  _16_  |  _18_ |
    
-
-> place technical tasks corresponding to story `#0` and leave out story points (not applicable in this case)
-
-- Hours per task (average, standard deviation)
-- Total task estimation error ratio: sum of total hours estimation / sum of total hours spent from previous table
+- Hours per task (average, standard deviation): 2.57
+- Total task estimation error ratio: sum of total hours estimation / sum of total hours spent from previous table: 0.98
 
   
 ## QUALITY MEASURES 
@@ -64,16 +57,21 @@ sections:
 
 ## ASSESSMENT
 
-- What caused your errors in estimation (if any)?
-
+- What caused your errors in estimation (if any)? 
+  
+    - We thought that story #3 was independent so it has been incorrectly estimated. Then it was considered as a task of story #2 and the resulting effort was slightly higher.
 - What lessons did you learn (both positive and negative) in this sprint?
+    - CONS: It is better to overestimate than underestimate.
+    - PROS: We've found out that Agile approach performs better than traditional planning methodology (e.g. waterfall).
 
 - Which improvement goals set in the previous retrospective were you able to achieve? 
   
 - Which ones you were not able to achieve? Why?
 
 - Improvement goals for the next sprint and how to achieve them (technical tasks, team coordination, etc.)
+    - Better distribution of workloads, since we didn't know each other
+    - Better organization of the Git, about branche creation and the core commands
 
-> Propose one or two
 
 - One thing you are proud of as a Team!!
+    - Even if we are only five people, we have different background knowlege and we share many good ideas.
